@@ -1,0 +1,83 @@
+<form [formGroup]="form">
+
+
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Lista de Órdenes</h2>
+      <button class="btn btn-primary" (click)="createNewOrder()">Create New Order</button>
+    </div>
+    <div class="container mt-4">
+
+
+      <div class="card">
+
+
+        <div class="container mt-4">
+          <input type="email" class="form-control" formControlName="email"  placeholder="Buscar por email del cliente">
+          @if(email?.touched){
+            @if(email?.hasError('required')){
+              <div class="text-danger">El email es requerido</div>
+            }
+
+            @if(email?.hasError('email')){
+              <div class="text-danger">El formato del email no es válido</div>
+            }
+
+            @if(email?.hasError('tooManyOrders')){
+              <div class="text-danger">
+                Has excedido el límite de pedidos (3) en las últimas 24 horas.
+                Pedidos realizados: {{email?.errors?.['tooManyOrders']?.count}}
+              </div>
+            }
+
+            @if(email?.hasError('apiError')){
+              <div class="text-danger">
+                Error al verificar el email. Por favor, intenta nuevamente.
+              </div>
+            }
+          }
+        </div>
+        <br>
+
+
+
+        <table class="table ">
+          <thead class="table">
+            <tr>
+              <th scope="col">Código de Orden</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Email</th>
+              <th scope="col">Productos</th>
+              <th scope="col">Fecha de Compra</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for(order of orders;track $index){
+            <tr>
+              <td>{{order.orderCode}}</td>
+              <td>{{order.customerName}}</td>
+              <td>{{order.email}}</td>
+              <td>{{order.products.length}}</td>
+              <td>{{order.timestamp | date:'dd/MM/yyyy'}}</td>
+              <td>{{order.total | currency}}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+
+        @if(orders.length === 0){
+        <div class="alert alert-info">
+          No hay órdenes para mostrar
+        </div>
+        }
+
+      </div>
+
+
+
+
+
+    </div>

@@ -1,0 +1,152 @@
+<form [formGroup]="form" (ngSubmit)="sendForm()">
+  <!-- Datos personales -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+    <div>
+      <label>Nombre:</label>
+      <input type="text" class="form-control" formControlName="nombre">
+      @if((nombre?.hasError('required') && nombre?.touched)){
+      <div class="text-danger">El nombre es requerido</div>
+      }
+      @if((nombre?.hasError('minlength') || nombre?.hasError('maxlength')) && nombre?.touched){
+      <div class="text-danger">El nombre debe tener entre 3 y 50 caracteres</div>
+
+      }
+    </div>
+    <div>
+      <label>Email</label>
+      <input type="email" class="form-control" formControlName="email">
+      @if(email?.touched){
+      @if(email?.hasError('required')){
+      <div class="text-danger">El email es requerido</div>
+      }
+
+      @if(email?.hasError('email')){
+      <div class="text-danger">El formato del email no es válido</div>
+      }
+
+      @if(email?.hasError('tooManyOrders')){
+      <div class="text-danger">
+        Has excedido el límite de pedidos (3) en las últimas 24 horas.
+        Pedidos realizados: {{email?.errors?.['tooManyOrders']?.count}}
+      </div>
+      }
+
+      @if(email?.hasError('apiError')){
+      <div class="text-danger">
+        Error al verificar el email. Por favor, intenta nuevamente.
+      </div>
+      }
+      }
+    </div>
+  </div>
+
+  <!-- Los dos selectores fijos -->
+  <div class="productos-container">
+    <div class="productos-header">
+      <h3>Productos</h3>
+    </div>
+
+
+    <div class="producto-row">
+      <div>
+        <label>Producto</label>
+        <select class="form-control" (change)="onProductSelect($event, 1)">
+          <option value="">Seleccione un producto</option>
+          @for(product of products; track product.id){
+          <option [value]="product.id">{{product.name}}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Cantidad</label>
+        <input type="number" class="form-control" [formControl]="selectedCantidadControl1">
+        @if(selectedCantidadControl1.hasError('min')){
+        <div class="text-danger">La cantidad debe ser mayor a 0</div>
+        }
+        @if(selectedCantidadControl1.hasError('exceedsStock')){
+        <div class="text-danger">La cantidad excede el stock disponible</div>
+        }
+      </div>
+      <div>
+        <label>Precio</label>
+        <input type="number" class="form-control" [value]="selectedPrice1" readonly>
+      </div>
+      <div>
+        <label>Stock</label>
+        <input type="number" class="form-control" [value]="selectedStock1" readonly>
+      </div>
+      <div style="display: flex; align-items: flex-end;">
+        <button class="btn-primary" (click)="agregarProducto(1)">+</button>
+      </div>
+    </div>
+
+    <!-- Segundo selector -->
+    <div class="producto-row">
+      <div>
+        <label>Producto</label>
+        <select class="form-control" (change)="onProductSelect($event, 2)">
+          <option value="">Seleccione un producto</option>
+          @for(product of products; track product.id){
+          <option [value]="product.id">{{product.name}}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label>Cantidad</label>
+        <input type="number" class="form-control" [formControl]="selectedCantidadControl2">
+        @if(selectedCantidadControl2.hasError('min')){
+        <div class="text-danger">La cantidad debe ser mayor a 0</div>
+        }
+        @if(selectedCantidadControl2.hasError('exceedsStock')){
+        <div class="text-danger">La cantidad excede el stock disponible</div>
+        }
+      </div>
+      <div>
+        <label>Precio</label>
+        <input type="number" class="form-control" [value]="selectedPrice2" readonly>
+      </div>
+      <div>
+        <label>Stock</label>
+        <input type="number" class="form-control" [value]="selectedStock2" readonly>
+        @if(selectedCantidadControl2.hasError('exceedsStock')){
+        <div class="text-danger">La cantidad no puede ser mayor al stock</div>
+        }
+      </div>
+      <div style="display: flex; align-items: flex-end;">
+        <button class="btn-primary" (click)="agregarProducto(2)">+</button>
+      </div>
+    </div>
+
+
+  </div>
+
+  <div formArrayName="productos" class="selected-products">
+    @if(productos.length === 0){
+    <div class="text-danger">Debe agregar al menos un producto</div>
+    }
+    @if(productos.hasError('duplicateProducts')){
+    <div class="text-danger">No se pueden agregar productos duplicados</div>
+    }
+    @if(form.hasError('maxTotalProducts')){
+    <div class="text-danger">El total de productos no puede exceder 10 unidades</div>
+    }
+    <h3>Productos Seleccionados</h3>
+    @for(producto of productos.controls; track $index){
+    <div [formGroupName]="$index">
+      <span>
+        {{getProductName(producto.get('producto')?.value)}} -
+        Cantidad: {{producto.get('cantidad')?.value}} -
+        Precio: {{producto.get('precio')?.value}} -
+        Stock: {{producto.get('stock')?.value}}
+      </span>
+      <button type="button" class="btn-danger" (click)="eliminarProducto($index)">X</button>
+    </div>
+    }
+  </div>
+
+  <div class="total-section">
+    <p>Total: $1529.982</p>
+    <p class="discount-text">10% descuento aplicado!</p>
+    <button class="btn-primary" type="submit">Create Order</button>
+  </div>
+</form>
